@@ -1,0 +1,65 @@
+#root {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+    background-color: #222;
+    min-height: 100vh; /* Ensure full height */
+    display: flex; /* Add flex display */
+}
+
+div {
+    outline: 2px solid yellow !important;
+}
+
+.form-container {
+    outline: 2px solid red !important;
+}
+
+.form-group {
+    outline: 2px solid green !important;
+}
+
+.auth-container {
+    outline: 2px solid blue !important;
+}
+
+.auth-form {
+    outline: 2px solid pink !important;
+}
+
+.name-fields {
+    outline: 2px solid orange !important;
+}
+
+.clock {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #444;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.main {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #222;
+}
+
+.app {
+    width: 100%; /* Take full width to allow proper centering of the form */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #222;
+}

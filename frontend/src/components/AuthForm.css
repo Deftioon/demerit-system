@@ -1,0 +1,122 @@
+.auth-container {
+    width: 100%;
+    max-width: 480px;
+    margin: 2rem auto;
+    background: #333;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.auth-header {
+    display: flex;
+    border-bottom: 1px solid #eee;
+}
+
+.auth-toggle {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    background: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-toggle.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.auth-toggle:hover:not(.active) {
+    background-color: #555;
+}
+
+/* Make sure both forms maintain the same width */
+.auth-form {
+    padding: 2rem;
+    width: 100%; /* Ensure form takes full width of container */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+.auth-form h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.name-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 32px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.forgot-password {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Ensure the container doesn't change size when switching modes */
+.form-container {
+    width: 100%; /* Take full width of auth-form */
+    min-width: 480px; /* Match the max-width of auth-container */
+    transition: all 0.3s ease; /* Smooth transition when switching */
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: #333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.name-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%; /* Ensure full width */
+}
+
+/* Update responsive design */
+@media (max-width: 480px) {
+    .auth-container,
+    .form-container {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+        min-width: unset;
+    }
+
+    .name-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-form {
+        padding: 1rem;
+    }
+}
