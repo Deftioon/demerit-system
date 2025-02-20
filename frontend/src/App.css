@@ -1,14 +1,17 @@
+html,
+body,
 #root {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 0;
     text-align: center;
     background-color: #222;
-    min-height: 100vh; /* Ensure full height */
+    height: 100vh; /* Ensure full height */
     display: flex; /* Add flex display */
+    overflow: hidden;
 }
 
-div {
+/* div {
     outline: 2px solid yellow !important;
 }
 
@@ -30,20 +33,7 @@ div {
 
 .name-fields {
     outline: 2px solid orange !important;
-}
-
-.clock {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: #444;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 1.2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-}
+} */
 
 .main {
     width: 100%;
@@ -54,6 +44,10 @@ div {
     justify-content: center;
     padding: 20px;
     background-color: #222;
+}
+
+.title {
+    margin: 0%;
 }
 
 .app {

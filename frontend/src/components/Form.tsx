@@ -17,6 +17,7 @@ interface FormInputProps {
   required?: boolean;
   error?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 interface FormButtonProps {
@@ -49,6 +50,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   required = false,
   error,
   className,
+  disabled = false,
 }) => {
   return (
     <div className="form-group">
@@ -67,6 +69,7 @@ export const FormInput: React.FC<FormInputProps> = ({
         placeholder={placeholder}
         required={required}
         className={`form-input ${error ? "error" : ""} ${className || ""}`}
+        disabled={disabled}
       />
       {error && <span className="error-message">{error}</span>}
     </div>

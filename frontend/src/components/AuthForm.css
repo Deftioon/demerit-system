@@ -8,9 +8,35 @@
     overflow: hidden;
 }
 
+.error-banner {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 1rem;
+    background-color: #ff4444;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* Style for disabled state */
+.form-input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.form-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.auth-toggle:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
 .auth-header {
     display: flex;
-    border-bottom: 1px solid #eee;
+    background-color: #444;
 }
 
 .auth-toggle {
@@ -34,15 +60,16 @@
 
 /* Make sure both forms maintain the same width */
 .auth-form {
-    padding: 2rem;
+    padding: 0.5rem 2rem 2rem;
     width: 100%; /* Ensure form takes full width of container */
     box-sizing: border-box; /* Include padding in width */
+    color: #ffffff;
 }
 
 .auth-form h2 {
     text-align: center;
-    margin-bottom: 2rem;
-    color: #333;
+    color: #ffffff;
+    margin-bottom: 1rem;
 }
 
 .name-fields {

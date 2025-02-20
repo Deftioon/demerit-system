@@ -1,14 +1,62 @@
 use actix_cors::Cors;
-use actix_web::{get, web, App, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use chrono::Local;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 
 mod database;
+mod models;
+
 use crate::database::{db, init_db};
+use models::{AuthResponse, ErrorResponse, LoginRequest, RegisterRequest, UserResponse};
 
 #[derive(Serialize)]
 struct TimeResponse {
     current_time: String,
+}
+
+async fn login(req: web::Json<LoginRequest>) -> impl Responder {
+    println!("Login attempt for email: {}", req.email);
+    // Dummy authentication logic
+    if req.email == "test@example.com" && req.password == "password123" {
+        let response = AuthResponse {
+            token: "dummy_jwt_token".to_string(),
+            user: UserResponse {
+                id: "1".to_string(),
+                email: req.email.clone(),
+                username: Some("testuser".to_string()),
+                first_name: Some("Test".to_string()),
+                last_name: Some("User".to_string()),
+            },
+        };
+        HttpResponse::Ok().json(response)
+    } else {
+        HttpResponse::Unauthorized().json(ErrorResponse {
+            message: "Invalid credentials".to_string(),
+        })
+    }
+}
+
+async fn register(req: web::Json<RegisterRequest>) -> impl Responder {
+    println!("Login attempt for email: {}", req.email);
+    // Dummy registration logic
+    if req.email.contains('@') {
+        let response = AuthResponse {
+            token: "new_dummy_jwt_token".to_string(),
+            user: UserResponse {
+                id: "2".to_string(),
+                email: req.email.clone(),
+                username: req.username.clone(),
+                first_name: req.first_name.clone(),
+                last_name: req.last_name.clone(),
+            },
+        };
+        HttpResponse::Ok().json(response)
+    } else {
+        HttpResponse::BadRequest().json(ErrorResponse {
+            message: "Invalid email format".to_string(),
+        })
+    }
 }
 
 #[get("/time")]
@@ -39,9 +87,13 @@ async fn main() -> std::io::Result<()> {
                 Cors::default()
                     .allow_any_origin()
                     .allow_any_method()
-                    .allow_any_header(),
+                    .allow_any_header()
+                    .supports_credentials()
+                    .max_age(3600),
             )
             .service(get_time)
+            .route("/login", web::post().to(login))
+            .route("/register", web::post().to(register))
     })
     .bind("127.0.0.1:8080")?
     .run()
