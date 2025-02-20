@@ -48,15 +48,15 @@ The backend will start on `http://localhost:8080` by default.
 
 2. Install the dependencies:
    ```
-   npm install
+   bun install
    ```
 
 3. Start the React application:
    ```
-   npm run dev
+   bun run dev
    ```
 
-The frontend will be available at `http://localhost:3000` by default.
+The frontend will be available at `http://localhost:5173` by default.
 
 ## Usage
 
