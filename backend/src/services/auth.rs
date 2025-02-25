@@ -12,8 +12,8 @@ pub fn auth_request(req: models::LoginRequest) -> Result<models::AuthResponse, S
     let user = conn
         .query_row(
             "SELECT user_id, username, password_hash, email, user_type, first_name, last_name
-             FROM users WHERE username = ?1",
-            params![req.username],
+             FROM users WHERE email = ?1",
+            params![req.email],
             |row| {
                 Ok(models::User {
                     id: row.get(0)?,
