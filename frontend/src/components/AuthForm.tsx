@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Form, FormInput, FormButton } from "./Form";
 import "./AuthForm.css";
+import "../App.css";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 
@@ -185,115 +186,129 @@ const AuthForm: React.FC = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-header">
-        <button
-          className={`auth-toggle ${mode === "login" ? "active" : ""}`}
-          onClick={() => switchMode("login")}
-          disabled={isLoading}
-        >
-          Login
-        </button>
-        <button
-          className={`auth-toggle ${mode === "register" ? "active" : ""}`}
-          onClick={() => switchMode("register")}
-          disabled={isLoading}
-        >
-          Register
-        </button>
+    <div className="main">
+      <div className="title">
+        <h1>Demerit System</h1>
+        <h3>DSI Demerit Point Management</h3>
       </div>
+      <div className="app">
+        <div className="auth-container">
+          <div className="auth-header">
+            <button
+              className={`auth-toggle ${mode === "login" ? "active" : ""}`}
+              onClick={() => switchMode("login")}
+              disabled={isLoading}
+            >
+              Login
+            </button>
+            <button
+              className={`auth-toggle ${mode === "register" ? "active" : ""}`}
+              onClick={() => switchMode("register")}
+              disabled={isLoading}
+            >
+              Register
+            </button>
+          </div>
 
-      <Form onSubmit={handleSubmit} className="auth-form">
-        <h2>{mode === "login" ? "Welcome Back" : "Create Account"}</h2>
+          <Form onSubmit={handleSubmit} className="auth-form">
+            <h2>{mode === "login" ? "Welcome Back" : "Create Account"}</h2>
 
-        {errors.submit && <div className="error-banner">{errors.submit}</div>}
+            {errors.submit && (
+              <div className="error-banner">{errors.submit}</div>
+            )}
 
-        {mode === "register" && (
-          <>
-            <div className="name-fields">
-              <FormInput
-                label="First Name"
-                name="firstName"
-                value={formData.firstName || ""}
-                onChange={handleChange}
-                placeholder="Enter first name"
-                error={errors.firstName}
-                required
-                disabled={isLoading}
-              />
-              <FormInput
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName || ""}
-                onChange={handleChange}
-                placeholder="Enter last name"
-                error={errors.lastName}
-                required
-                disabled={isLoading}
-              />
-            </div>
+            {mode === "register" && (
+              <>
+                <div className="name-fields">
+                  <FormInput
+                    label="First Name"
+                    name="firstName"
+                    value={formData.firstName || ""}
+                    onChange={handleChange}
+                    placeholder="Enter first name"
+                    error={errors.firstName}
+                    required
+                    disabled={isLoading}
+                  />
+                  <FormInput
+                    label="Last Name"
+                    name="lastName"
+                    value={formData.lastName || ""}
+                    onChange={handleChange}
+                    placeholder="Enter last name"
+                    error={errors.lastName}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <FormInput
+                  label="Username"
+                  name="username"
+                  value={formData.username || ""}
+                  onChange={handleChange}
+                  placeholder="Choose a username"
+                  error={errors.username}
+                  required
+                  disabled={isLoading}
+                />
+              </>
+            )}
 
             <FormInput
-              label="Username"
-              name="username"
-              value={formData.username || ""}
+              label="Email"
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
-              placeholder="Choose a username"
-              error={errors.username}
+              placeholder="Enter your email"
+              error={errors.email}
               required
               disabled={isLoading}
             />
-          </>
-        )}
 
-        <FormInput
-          label="Email"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="Enter your email"
-          error={errors.email}
-          required
-          disabled={isLoading}
-        />
+            <div className="password-input-wrapper">
+              <FormInput
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                error={errors.password}
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
 
-        <div className="password-input-wrapper">
-          <FormInput
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Enter your password"
-            error={errors.password}
-            required
-            disabled={isLoading}
-          />
-          <button
-            type="button"
-            className="toggle-password"
-            onClick={() => setShowPassword(!showPassword)}
-            disabled={isLoading}
-          >
-            {showPassword ? "👁️" : "👁️‍🗨️"}
-          </button>
+            <FormButton type="submit" disabled={isLoading}>
+              {isLoading
+                ? "Loading..."
+                : mode === "login"
+                  ? "Login"
+                  : "Register"}
+            </FormButton>
+
+            {mode === "login" && (
+              <button
+                type="button"
+                className="forgot-password"
+                disabled={isLoading}
+              >
+                Forgot Password?
+              </button>
+            )}
+          </Form>
         </div>
-
-        <FormButton type="submit" disabled={isLoading}>
-          {isLoading ? "Loading..." : mode === "login" ? "Login" : "Register"}
-        </FormButton>
-
-        {mode === "login" && (
-          <button
-            type="button"
-            className="forgot-password"
-            disabled={isLoading}
-          >
-            Forgot Password?
-          </button>
-        )}
-      </Form>
+      </div>
     </div>
   );
 };
