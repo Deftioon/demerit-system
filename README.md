@@ -1,6 +1,6 @@
 # DP Management System
 
-This project is a DP (Data Processing) Management System that consists of a Rust backend using Actix and a React TypeScript frontend. 
+This project is a DP (Data Processing) Management System that consists of a Rust backend using Actix and a React TypeScript frontend.
 
 ## Project Structure
 
@@ -19,6 +19,9 @@ dp-management-system
 │       └── main.tsx
 └── README.md
 ```
+
+## Quick Start
+Run the `start.sh` script to start the backend and frontend servers.
 
 ## Backend Setup
 
