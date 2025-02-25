@@ -1,3 +1,4 @@
+use crate::models::{self, LoginRequest};
 use rusqlite::{Connection, Result};
 
 pub fn get_db_connection() -> Result<Connection> {

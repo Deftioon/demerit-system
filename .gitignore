@@ -1,4 +1,4 @@
-backend/database/*.db
+backend/*.db
 
 # Logs
 logs

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Form, FormInput, FormButton } from "./Form";
 import "./AuthForm.css";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../contexts/UserContext";
 
 type AuthMode = "login" | "register";
 
@@ -21,19 +23,7 @@ interface AuthFormErrors {
   submit?: string; // For general submission errors
 }
 
-interface User {
-  id: string;
-  email: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-interface AuthFormProps {
-  onAuthSuccess: (user: User) => void;
-}
-
-const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
+const AuthForm: React.FC = () => {
   console.log("Logging in...");
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
@@ -48,6 +38,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   });
 
   const [errors, setErrors] = useState<AuthFormErrors>({});
+
+  const navigate = useNavigate();
+  const { setUser } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -155,7 +148,24 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
       // Call the success handler with the user data
       if (data?.user) {
-        onAuthSuccess(data.user);
+        setUser({
+          ...data.user,
+          userType: data.user.permissions,
+        });
+
+        switch (data.user.permissions) {
+          case "teacher":
+            navigate("/teacher");
+            break;
+          case "parent":
+            navigate("/parent");
+            break;
+          case "student":
+            navigate("/student");
+            break;
+          default:
+            throw new Error("Unknown user type");
+        }
       } else {
         throw new Error("No user data received");
       }

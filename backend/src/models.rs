@@ -31,9 +31,21 @@ pub struct UserResponse {
     pub username: Option<String>,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
+    pub permissions: String,
 }
 
 #[derive(Debug, Serialize)]
 pub struct ErrorResponse {
     pub message: String,
+}
+
+#[derive(Debug)]
+pub struct User {
+    pub id: i32,
+    pub username: String,
+    pub password_hash: String,
+    pub email: String,
+    pub user_type: String,
+    pub first_name: String,
+    pub last_name: String,
 }

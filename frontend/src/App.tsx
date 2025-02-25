@@ -1,26 +1,46 @@
-import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { UserProvider } from "./contexts/UserContext";
 import AuthForm from "./components/AuthForm";
+import { TeacherDashboard } from "./pages/TeacherDashboard";
+import { StudentDashboard } from "./pages/StudentDashboard";
+import { ParentDashboard } from "./pages/ParentDashboard";
 import Clock from "./components/Clock";
-import "./App.css";
-
-function onAuthSuccess() {
-  return;
-}
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <>
-      <Clock />
-      <div className="main">
-        <div className="title">
-          <h1>Demerit System</h1>
-          <h3>DSI Demerit Point Management</h3>
-        </div>
-        <div className="app">
-          <AuthForm onAuthSuccess={onAuthSuccess} />
-        </div>
-      </div>
-    </>
+    <UserProvider>
+      <Router>
+        <Clock />
+        <Routes>
+          <Route path="/" element={<AuthForm />} />
+          <Route
+            path="/teacher"
+            element={
+              <ProtectedRoute allowedUserType="teacher">
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute allowedUserType="student">
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent"
+            element={
+              <ProtectedRoute allowedUserType="parent">
+                <ParentDashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 
