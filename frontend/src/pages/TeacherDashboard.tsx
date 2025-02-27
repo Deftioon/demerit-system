@@ -2,11 +2,15 @@ import { useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import DataTable from "../components/DataTable";
 import { AddDemeritForm, NewDemeritRecord } from "../components/AddDemeritForm";
+import { DemeritHistory } from "../components/DemeritHistory";
 import "./TeacherDashboard.css";
 
 export const TeacherDashboard = () => {
   const { user } = useUser();
   const [showAddDemerit, setShowAddDemerit] = useState(false);
+  const [showDemeritHistory, setShowDemeritHistory] = useState(false);
+
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleAddDemerit = async (demerit: NewDemeritRecord) => {
     try {
@@ -27,8 +31,10 @@ export const TeacherDashboard = () => {
 
       // Close the form and refresh the table
       setShowAddDemerit(false);
+
+      setRefreshTrigger((prev) => prev + 1);
       // You could add a refresh mechanism here
-      window.location.reload(); // Simple way to refresh data
+      alert("Demerit added successfully!");
     } catch (error) {
       console.error("Error adding demerit:", error);
       alert(
@@ -49,15 +55,25 @@ export const TeacherDashboard = () => {
         >
           Add Demerit
         </button>
+        <button
+          className="view-history-button"
+          onClick={() => setShowDemeritHistory(true)}
+        >
+          View Demerit History
+        </button>
       </div>
 
-      <DataTable title="Demerits" />
+      <DataTable title="Demerits" refreshTrigger={refreshTrigger} />
 
       {showAddDemerit && (
         <AddDemeritForm
           onSubmit={handleAddDemerit}
           onClose={() => setShowAddDemerit(false)}
         />
+      )}
+
+      {showDemeritHistory && (
+        <DemeritHistory onClose={() => setShowDemeritHistory(false)} />
       )}
     </div>
   );

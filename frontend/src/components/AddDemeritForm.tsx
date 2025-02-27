@@ -78,7 +78,7 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Ensure this is called to prevent form navigation
     try {
       // Convert string values to numbers before sending
       const submitData = {
@@ -88,13 +88,16 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
         description: formData.description,
       };
 
+      // Show loading state if needed
+      setLoading(true);
+
       const response = await fetch("http://localhost:8080/add_demerit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(submitData), // Send the converted data
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -102,9 +105,15 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
         throw new Error(errorData.message || "Failed to add demerit");
       }
 
+      // Call onSubmit with the processed data
       onSubmit(submitData);
+
+      // Close the form - don't navigate away
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add demerit");
+    } finally {
+      setLoading(false);
     }
   };
 

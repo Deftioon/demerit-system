@@ -505,6 +505,7 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::admin::get_admin_data)
             .service(handlers::admin::update_user)
             .service(update_user_role)
+            .service(handlers::demerit::get_demerit_history)
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
             .route("/add_demerit", web::post().to(add_demerit))

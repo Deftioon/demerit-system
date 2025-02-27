@@ -9,11 +9,12 @@ interface Column {
 
 interface DataTableProps {
   title: string;
+  refreshTrigger?: number;
 }
 
 // Define interfaces for different types of data records
 
-const DataTable: React.FC<DataTableProps> = ({ title }) => {
+const DataTable: React.FC<DataTableProps> = ({ title, refreshTrigger = 0 }) => {
   const { user } = useUser();
   const [data, setData] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +72,7 @@ const DataTable: React.FC<DataTableProps> = ({ title }) => {
 
   useEffect(() => {
     fetchData();
-  }, [user?.userType]);
+  }, [user?.userType, refreshTrigger]);
 
   if (loading) {
     return <div className="loading">Loading...</div>;
