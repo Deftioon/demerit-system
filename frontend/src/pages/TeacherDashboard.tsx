@@ -9,11 +9,20 @@ export const TeacherDashboard = () => {
   const { user } = useUser();
   const [showAddDemerit, setShowAddDemerit] = useState(false);
   const [showDemeritHistory, setShowDemeritHistory] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleAddDemerit = async (demerit: NewDemeritRecord) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
     try {
+      console.log("Submitting demerit record:", demerit);
+
       // Make sure demerit contains number values, not strings
       const response = await fetch("http://localhost:8080/add_demerit", {
         method: "POST",
@@ -40,6 +49,8 @@ export const TeacherDashboard = () => {
       alert(
         `Failed to add demerit: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

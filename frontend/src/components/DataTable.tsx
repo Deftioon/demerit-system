@@ -17,9 +17,11 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({ title, refreshTrigger = 0 }) => {
   const { user } = useUser();
   const [data, setData] = useState<DataRecord[]>([]);
+  const [filteredData, setFilteredData] = useState<DataRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Define columns based on user type
   useEffect(() => {
@@ -53,6 +55,8 @@ const DataTable: React.FC<DataTableProps> = ({ title, refreshTrigger = 0 }) => {
     setError(null);
     try {
       const endpoint = `http://localhost:8080/${user?.userType}_data`;
+      console.log(`Fetching data from: ${endpoint}`);
+
       const response = await fetch(endpoint, {
         credentials: "include",
       });
@@ -62,13 +66,36 @@ const DataTable: React.FC<DataTableProps> = ({ title, refreshTrigger = 0 }) => {
       }
 
       const jsonData: DataRecord[] = await response.json();
+      console.log("Received data:", jsonData);
+
       setData(jsonData);
+      setFilteredData(jsonData);
     } catch (err) {
+      console.error("Error fetching data:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredData(data);
+    } else {
+      const term = searchTerm.toLowerCase();
+      const filtered = data.filter((record) => {
+        // Search in all string fields of the record
+        return Object.entries(record).some(([key, value]) => {
+          // Only search in string values
+          if (typeof value === "string") {
+            return value.toLowerCase().includes(term);
+          }
+          return false;
+        });
+      });
+      setFilteredData(filtered);
+    }
+  }, [data, searchTerm]);
 
   useEffect(() => {
     fetchData();
@@ -84,32 +111,55 @@ const DataTable: React.FC<DataTableProps> = ({ title, refreshTrigger = 0 }) => {
 
   return (
     <div className="data-table-container">
-      <div className="data-table-header">
+      <div className="table-header">
         <h2>{title}</h2>
-        <button onClick={fetchData} className="refresh-button">
-          Refresh
-        </button>
+        <div className="table-controls">
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search records..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <button onClick={fetchData} className="refresh-button">
+            Refresh
+          </button>
+        </div>
       </div>
-      <table className="data-table">
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.key}>{column.header}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, index) => (
-            <tr key={index}>
+
+      {/* Show helpful message when data is empty */}
+      {filteredData.length === 0 && !loading && !error && (
+        <div className="no-data">
+          {searchTerm
+            ? "No matching records found"
+            : "No records available yet"}
+        </div>
+      )}
+
+      {filteredData.length > 0 && (
+        <table className="data-table">
+          <thead>
+            <tr>
               {columns.map((column) => (
-                <td key={`${index}-${column.key}`}>
-                  {row[column.key as keyof DataRecord]}
-                </td>
+                <th key={column.key}>{column.header}</th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((row, index) => (
+              <tr key={index}>
+                {columns.map((column) => (
+                  <td key={`${index}-${column.key}`}>
+                    {row[column.key as keyof DataRecord]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

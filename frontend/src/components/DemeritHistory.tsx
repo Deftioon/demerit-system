@@ -55,6 +55,9 @@ export const DemeritHistory: React.FC<DemeritHistoryProps> = ({ onClose }) => {
     return (
       <div className="modal-overlay">
         <div className="modal-content demerit-history">
+          <button className="floating-close-button" onClick={onClose}>
+            Close
+          </button>
           <h2>Demerit History</h2>
           <div>Loading...</div>
         </div>
@@ -65,6 +68,9 @@ export const DemeritHistory: React.FC<DemeritHistoryProps> = ({ onClose }) => {
     return (
       <div className="modal-overlay">
         <div className="modal-content demerit-history">
+          <button className="floating-close-button" onClick={onClose}>
+            Close
+          </button>
           <h2>Demerit History</h2>
           <div className="error">{error}</div>
           <button onClick={onClose} className="close-button">
@@ -77,6 +83,9 @@ export const DemeritHistory: React.FC<DemeritHistoryProps> = ({ onClose }) => {
   return (
     <div className="modal-overlay">
       <div className="modal-content demerit-history">
+        <button className="floating-close-button" onClick={onClose}>
+          Close
+        </button>
         <div className="history-header">
           <h2>Demerit History</h2>
           <div className="search-container">

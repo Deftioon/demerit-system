@@ -84,26 +84,12 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
       const submitData = {
         student_id: parseInt(formData.student_id, 10),
         category_id: parseInt(formData.category_id, 10),
-        points: formData.points,
+        points: parseInt(String(formData.points), 10),
         description: formData.description,
       };
 
       // Show loading state if needed
       setLoading(true);
-
-      const response = await fetch("http://localhost:8080/add_demerit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add demerit");
-      }
 
       // Call onSubmit with the processed data
       onSubmit(submitData);
@@ -112,8 +98,6 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add demerit");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -133,6 +117,10 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
   return (
     <div className="modal-overlay">
       <div className="modal-content">
+        <button className="floating-close-button" onClick={onClose}>
+          Close
+        </button>
+
         <h2>Add New Demerit</h2>
         <Form onSubmit={handleSubmit} className="add-demerit-form">
           <select

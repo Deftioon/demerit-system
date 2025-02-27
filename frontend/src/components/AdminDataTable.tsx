@@ -40,7 +40,7 @@ export const AdminDataTable: React.FC = () => {
         first_name: user.first_name,
         last_name: user.last_name,
         total_demerits: user.total_demerits || 0,
-        created_at: user.created_at || new Date().toISOString(), // Add the created_at field
+        created_at: user.created_at || new Date().toISOString(),
         grade_level: user.grade_level,
         class_section: user.class_section,
       };
@@ -110,16 +110,89 @@ export const AdminDataTable: React.FC = () => {
       const data = await response.json();
       console.log("FETCHED ADMIN DATA:", JSON.stringify(data, null, 2));
       setUsers(data);
-      // // Force a complete state replacement
-      // setUsers((prevUsers) => {
-      //   console.log("Previous users:", prevUsers);
-      //   console.log("New users:", data);
-      //   return [...data];
-      // });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle saving a user with parent-student relationships
+  const handleSaveUser = async (updatedUser: AdminUserRecord) => {
+    try {
+      // First, save the basic user information
+      const response = await fetch("http://localhost:8080/update_user", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to update user");
+      }
+
+      // If this is a parent with children, we need to save the relationships
+      if (
+        updatedUser.user_type === "parent" &&
+        updatedUser.children &&
+        updatedUser.children.length > 0
+      ) {
+        // First, get the parent_id
+        const parentsResponse = await fetch("http://localhost:8080/parents", {
+          credentials: "include",
+        });
+
+        if (!parentsResponse.ok) {
+          throw new Error("Failed to fetch parents data");
+        }
+
+        const parents = await parentsResponse.json();
+        const parent = parents.find(
+          (p: any) => p.user_id === updatedUser.user_id,
+        );
+
+        if (parent) {
+          // Now we have the parent_id, we can update the parent-student relationships
+          const studentIds = updatedUser.children.map((child) => child.id);
+
+          // Call our new endpoint to update relations
+          const relationResponse = await fetch(
+            "http://localhost:8080/update_parent_students",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+              body: JSON.stringify({
+                parent_id: parent.parent_id,
+                student_ids: studentIds,
+              }),
+            },
+          );
+
+          if (!relationResponse.ok) {
+            const data = await relationResponse.json();
+            console.warn(
+              "Warning: Failed to update parent-student relationships:",
+              data.message,
+            );
+            // We don't throw here as the main update was still successful
+          }
+        }
+      }
+
+      // Finally, refresh the data
+      await fetchUsers();
+
+      return true;
+    } catch (error) {
+      console.error("Error saving user:", error);
+      throw error;
     }
   };
 
@@ -140,11 +213,6 @@ export const AdminDataTable: React.FC = () => {
   };
 
   const renderGradeLevel = (user: AdminUserRecord) => {
-    console.log(
-      `User ${user.user_id} (${user.user_type}) grade_level:`,
-      user.grade_level,
-    );
-
     // Only display grade level for students and make sure it's displayed properly
     return user.user_type === "student"
       ? user.grade_level !== null && user.grade_level !== undefined
@@ -154,11 +222,6 @@ export const AdminDataTable: React.FC = () => {
   };
 
   const renderClassSection = (user: AdminUserRecord) => {
-    console.log(
-      `User ${user.user_id} (${user.user_type}) class_section:`,
-      user.class_section,
-    );
-
     // Only display class section for students and make sure it's displayed properly
     return user.user_type === "student"
       ? user.class_section !== null && user.class_section !== undefined
@@ -219,27 +282,6 @@ export const AdminDataTable: React.FC = () => {
                   <div className={`role-badge ${user.user_type}`}>
                     {user.user_type}
                   </div>
-                  <select
-                    className="role-select"
-                    value={user.user_type}
-                    onChange={(e) =>
-                      handleRoleChange(user.user_id, e.target.value)
-                    }
-                    disabled={isUpdating === user.user_id}
-                  >
-                    {userTypes.map((type) => (
-                      <option
-                        key={type}
-                        value={type}
-                        className={`role-option ${type}`}
-                      >
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                  {isUpdating === user.user_id && (
-                    <span className="updating-spinner">⟳</span>
-                  )}
                 </div>
               </td>
               <td>{renderGradeLevel(user)}</td>
@@ -247,7 +289,6 @@ export const AdminDataTable: React.FC = () => {
               <td className={getDemeritClass(user.total_demerits)}>
                 {user.total_demerits}
               </td>
-              {/* TODO: Is this date handling correct? */}
               <td>{new Date(user.created_at).toLocaleDateString()}</td>
               <td>
                 {user.user_type === "parent" &&
@@ -273,28 +314,16 @@ export const AdminDataTable: React.FC = () => {
             setSelectedUser(null);
           }}
           onSave={async (updatedUser) => {
-            // Call an endpoint to update full user details
-            const response = await fetch("http://localhost:8080/update_user", {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify(updatedUser),
-            });
-            if (!response.ok) {
-              const data = await response.json();
-              throw new Error(data.message || "Failed to update user");
+            try {
+              await handleSaveUser(updatedUser);
+              setShowEditModal(false);
+              setSelectedUser(null);
+            } catch (error) {
+              console.error("Error in onSave handler:", error);
+              alert(
+                `Failed to save user: ${error instanceof Error ? error.message : "Unknown error"}`,
+              );
             }
-            if (response.headers.get("Content-Length") === "0") {
-              throw new Error("Empty response received");
-            }
-            const data = await response.json();
-            console.log("User updated successfully:", data);
-
-            await fetchUsers(); // Refresh data
-            setShowEditModal(false);
-            setSelectedUser(null);
           }}
         />
       )}

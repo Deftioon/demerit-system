@@ -96,7 +96,10 @@ pub async fn get_demerit_history() -> impl Responder {
     "#;
 
     let mut stmt = match conn.prepare(query) {
-        Ok(stmt) => stmt,
+        Ok(stmt) => {
+            println!("Query prepared successfully");
+            stmt
+        }
         Err(e) => {
             return HttpResponse::InternalServerError().json(ErrorResponse {
                 message: format!("Query preparation error: {}", e),
@@ -105,14 +108,27 @@ pub async fn get_demerit_history() -> impl Responder {
     };
 
     let history_result = stmt.query_map([], |row| {
+        let demerit_id: i32 = row.get(0)?;
+        let student_name: String = row.get(1)?;
+        let category_name: String = row.get(2)?;
+        let points: i32 = row.get(3)?;
+        let teacher_name: String = row.get(4)?;
+        let description: String = row.get(5)?;
+        let date_issued: String = row.get(6)?;
+
+        println!(
+            "Got record: ID={}, Student={}, Category={}",
+            demerit_id, student_name, category_name
+        );
+
         Ok(DemeritHistoryRecord {
-            demerit_id: row.get(0)?,
-            student_name: row.get(1)?,
-            category_name: row.get(2)?,
-            points: row.get(3)?,
-            teacher_name: row.get(4)?,
-            description: row.get(5)?,
-            date_issued: row.get(6)?,
+            demerit_id,
+            student_name,
+            category_name,
+            points,
+            teacher_name,
+            description,
+            date_issued,
         })
     });
 
@@ -120,14 +136,23 @@ pub async fn get_demerit_history() -> impl Responder {
         Ok(mapped_rows) => {
             let records: Result<Vec<DemeritHistoryRecord>, _> = mapped_rows.collect();
             match records {
-                Ok(records) => HttpResponse::Ok().json(records),
-                Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
-                    message: format!("Failed to collect demerit records: {}", e),
-                }),
+                Ok(records) => {
+                    println!("Found {} demerit records", records.len());
+                    HttpResponse::Ok().json(records)
+                }
+                Err(e) => {
+                    println!("Error collecting records: {}", e);
+                    HttpResponse::InternalServerError().json(ErrorResponse {
+                        message: format!("Failed to collect demerit records: {}", e),
+                    })
+                }
             }
         }
-        Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
-            message: format!("Query execution error: {}", e),
-        }),
+        Err(e) => {
+            println!("Query execution failed: {}", e);
+            HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Query execution error: {}", e),
+            })
+        }
     }
 }

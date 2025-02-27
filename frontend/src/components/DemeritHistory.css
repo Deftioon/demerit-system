@@ -3,6 +3,7 @@
     max-width: 1200px;
     max-height: 80vh;
     overflow-y: auto;
+    position: relative; /* Add this to enable absolute positioning for the close button */
 }
 
 .history-header {
@@ -11,6 +12,7 @@
     align-items: center;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
+    padding-right: 40px; /* Make space for the floating close button */
 }
 
 .search-container {
@@ -71,6 +73,33 @@
     text-align: center;
     color: #999;
     font-style: italic;
+}
+
+/* Adding the floating close button styles */
+.floating-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: auto;
+    height: auto;
+    padding: 5px 10px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.2s;
+    font-weight: bold;
+}
+
+.floating-close-button:hover {
+    background-color: #666;
 }
 
 @media (max-width: 768px) {

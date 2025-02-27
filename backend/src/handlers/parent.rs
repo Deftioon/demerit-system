@@ -19,6 +19,78 @@ pub struct ParentStudentRelationship {
     pub student_id: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BulkParentStudentRelationship {
+    pub parent_id: i32,
+    pub student_ids: Vec<i32>,
+}
+
+pub async fn update_parent_students(
+    req: web::Json<BulkParentStudentRelationship>,
+) -> impl Responder {
+    let mut conn = match db::get_db_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Database connection error: {}", e),
+            })
+        }
+    };
+
+    // Start a transaction
+    let tx = match conn.transaction() {
+        Ok(tx) => tx,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Failed to start transaction: {}", e),
+            })
+        }
+    };
+
+    // First, remove all existing relationships for this parent
+    match tx.execute(
+        "DELETE FROM parent_student WHERE parent_id = ?1",
+        params![req.parent_id],
+    ) {
+        Ok(_) => {}
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Failed to remove existing relationships: {}", e),
+            })
+        }
+    }
+
+    // Then add all the new ones
+    for student_id in &req.student_ids {
+        match tx.execute(
+            "INSERT INTO parent_student (parent_id, student_id) VALUES (?1, ?2)",
+            params![req.parent_id, student_id],
+        ) {
+            Ok(_) => {}
+            Err(e) => {
+                return HttpResponse::InternalServerError().json(ErrorResponse {
+                    message: format!(
+                        "Failed to add relationship for student {}: {}",
+                        student_id, e
+                    ),
+                })
+            }
+        }
+    }
+
+    // Commit the transaction
+    match tx.commit() {
+        Ok(_) => HttpResponse::Ok().json(json!({
+            "status": "success",
+            "message": format!("Updated parent-student relationships for parent ID {}", req.parent_id),
+            "added_students": req.student_ids.len()
+        })),
+        Err(e) => HttpResponse::InternalServerError().json(ErrorResponse {
+            message: format!("Failed to commit transaction: {}", e),
+        })
+    }
+}
+
 #[get("/parent_data")]
 pub async fn get_parent_data() -> impl Responder {
     let records = vec![
@@ -96,7 +168,7 @@ pub async fn add_parent_student(req: web::Json<ParentStudentRelationship>) -> im
     // Check if relationship already exists
     let exists: bool = match conn.query_row(
         "SELECT EXISTS(
-            SELECT 1 FROM parent_student 
+            SELECT 1 FROM parent_student
             WHERE parent_id = ?1 AND student_id = ?2
          )",
         params![req.parent_id, req.student_id],

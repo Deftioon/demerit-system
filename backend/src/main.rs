@@ -94,18 +94,6 @@ fn connectto_db() {
     }
 }
 
-#[get("/teacher_data")]
-async fn get_teacher_data() -> impl Responder {
-    let records = vec![TeacherRecord {
-        id: 1,
-        student_name: String::from("John Doe"),
-        category: String::from("Late to Class"),
-        points: 1,
-        date_issued: String::from("2024-01-20"),
-    }];
-    HttpResponse::Ok().json(records)
-}
-
 #[get("/student_data")]
 async fn get_student_data() -> impl Responder {
     let records = vec![StudentRecord {
@@ -499,13 +487,13 @@ async fn main() -> std::io::Result<()> {
                     .max_age(3600),
             )
             .service(get_time)
-            .service(get_teacher_data)
             .service(get_student_data)
             .service(get_parent_data)
             .service(handlers::admin::get_admin_data)
             .service(handlers::admin::update_user)
             .service(update_user_role)
             .service(handlers::demerit::get_demerit_history)
+            .service(handlers::teacher::get_teacher_data)
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
             .route("/add_demerit", web::post().to(add_demerit))
@@ -513,6 +501,10 @@ async fn main() -> std::io::Result<()> {
             .route("/demerit-categories", web::get().to(get_demerit_categories))
             .route("/parents", web::get().to(get_parents))
             .route("/add_parent_student", web::post().to(add_parent_student))
+            .route(
+                "/update_parent_students",
+                web::post().to(handlers::parent::update_parent_students),
+            )
     })
     .bind("127.0.0.1:8080")?
     .run()
