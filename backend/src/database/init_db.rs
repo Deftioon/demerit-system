@@ -1,6 +1,40 @@
-use rusqlite::{Connection, Result};
+use bcrypt::{hash, DEFAULT_COST};
+use rusqlite::{params, Connection, Result};
 use std::fs;
 use std::path::Path;
+
+pub fn create_admin_account(conn: &rusqlite::Connection) -> Result<()> {
+    // Check if admin account already exists
+    let admin_exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM users WHERE email = 'admin@edu.my')",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(false);
+
+    if !admin_exists {
+        let password_hash = hash("admin123", DEFAULT_COST)
+            .map_err(|e| rusqlite::Error::InvalidParameterName(e.to_string()))?;
+
+        conn.execute(
+            "INSERT INTO users (username, password_hash, email, user_type, first_name, last_name)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            params![
+                "admin",
+                password_hash,
+                "admin@edu.my",
+                "admin",
+                "System",
+                "Administrator"
+            ],
+        )?;
+
+        println!("Admin account created successfully!");
+    }
+
+    Ok(())
+}
 
 pub fn initialize_database() -> Result<()> {
     let db_path = "demerit.db";
@@ -23,6 +57,9 @@ pub fn initialize_database() -> Result<()> {
         // Execute the schema SQL
         conn.execute_batch(&schema)?;
         println!("Executing Schema");
+
+        //  Create admin account
+        create_admin_account(&conn)?;
 
         println!("Database initialized successfully!");
     }

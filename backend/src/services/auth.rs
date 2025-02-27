@@ -28,9 +28,14 @@ pub fn auth_request(req: models::LoginRequest) -> Result<models::AuthResponse, S
         )
         .map_err(|_| "User not found".to_string())?;
 
+    println!("Found user with hash: {}", user.password_hash); // Debug line
+    println!("Comparing with password: {}", req.password); // Debug line
+
     // Verify password
     let is_valid = verify(&req.password, &user.password_hash)
         .map_err(|e| format!("Password verification error: {}", e))?;
+
+    println!("Password validation result: {}", is_valid); // Debug line
 
     if !is_valid {
         return Err("Invalid password".to_string());

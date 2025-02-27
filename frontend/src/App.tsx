@@ -4,6 +4,7 @@ import AuthForm from "./components/AuthForm";
 import { TeacherDashboard } from "./pages/TeacherDashboard";
 import { StudentDashboard } from "./pages/StudentDashboard";
 import { ParentDashboard } from "./pages/ParentDashboard";
+import { AdminDashboard } from "./pages/AdminDashboard";
 import Clock from "./components/Clock";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -14,6 +15,14 @@ function App() {
         <Clock />
         <Routes>
           <Route path="/" element={<AuthForm />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedUserType="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/teacher"
             element={

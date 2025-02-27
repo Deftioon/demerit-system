@@ -1,3 +1,13 @@
-.welcome {
+.Welcome {
     color: #f7f7f8;
+}
+
+.ChildInfoTitle {
+    outline: 5px, solid, #f7f7f8;
+    background-color: #444;
+}
+
+.container {
+    outline: 5px, solid, #f7f7f8;
+    background-color: #333333;
 }

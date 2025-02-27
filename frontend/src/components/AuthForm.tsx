@@ -155,6 +155,9 @@ const AuthForm: React.FC = () => {
         });
 
         switch (data.user.permissions) {
+          case "admin":
+            navigate("/admin");
+            break;
           case "teacher":
             navigate("/teacher");
             break;
@@ -189,7 +192,7 @@ const AuthForm: React.FC = () => {
     <div className="main">
       <div className="title">
         <h1>Demerit System</h1>
-        <h3>DSI Demerit Point Management</h3>
+        <h3>Demerit Point Management</h3>
       </div>
       <div className="app">
         <div className="auth-container">
