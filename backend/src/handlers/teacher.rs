@@ -178,35 +178,40 @@ pub async fn get_teacher_data() -> impl Responder {
     HttpResponse::Ok().json(records)
 }
 
-pub async fn add_demerit(req: web::Json<NewDemeritRecord>) -> impl Responder {
-    println!("Received demerit request: {:?}", req);
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NewDemeritRecordWithTeacher {
+    pub student_id: i32,
+    pub category_id: i32,
+    pub points: i32,
+    pub description: String,
+    pub teacher_email: String, // Add this field
+}
 
+pub async fn add_demerit(req: web::Json<NewDemeritRecordWithTeacher>) -> impl Responder {
     let conn = match db::get_db_connection() {
         Ok(conn) => conn,
         Err(e) => {
-            eprintln!("Database connection error: {}", e);
             return HttpResponse::InternalServerError().json(ErrorResponse {
                 message: format!("Database connection error: {}", e),
-            });
+            })
         }
     };
 
+    // Get teacher_id from the provided email
     let teacher_id: i32 = match conn.query_row(
         "SELECT teacher_id FROM teachers
-             JOIN users ON teachers.user_id = users.user_id
-             WHERE users.email = 'teacher@edu.my'",
-        [],
+         JOIN users ON teachers.user_id = users.user_id
+         WHERE users.email = ?1",
+        params![req.teacher_email],
         |row| row.get(0),
     ) {
         Ok(id) => id,
         Err(e) => {
-            eprintln!("Error retrieving teacher ID: {}", e);
             return HttpResponse::InternalServerError().json(ErrorResponse {
-                message: "Could not determine teacher ID".to_string(),
-            });
+                message: format!("Failed to get teacher ID: {}", e),
+            })
         }
     };
-
     // First verify the student exists
     let student_exists: bool = match conn.query_row(
         "SELECT EXISTS(SELECT 1 FROM students WHERE student_id = ?1)",

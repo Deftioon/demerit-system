@@ -251,56 +251,58 @@ export const AdminDataTable: React.FC = () => {
         </div>
       </div>
 
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Grade</th>
-            <th>Class</th>
-            <th>Demerits</th>
-            <th>Created</th>
-            <th>Children</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredUsers.map((user) => (
-            <tr
-              key={user.user_id}
-              onClick={() => openEditModal(user)}
-              style={{ cursor: "pointer" }}
-            >
-              <td>{user.user_id}</td>
-              <td>{`${user.first_name} ${user.last_name}`}</td>
-              <td>{user.username}</td>
-              <td>{user.email}</td>
-              <td>
-                <div className={`role-badge-container ${user.user_type}`}>
-                  <div className={`role-badge ${user.user_type}`}>
-                    {user.user_type}
-                  </div>
-                </div>
-              </td>
-              <td>{renderGradeLevel(user)}</td>
-              <td>{renderClassSection(user)}</td>
-              <td className={getDemeritClass(user.total_demerits)}>
-                {user.total_demerits}
-              </td>
-              <td>{new Date(user.created_at).toLocaleDateString()}</td>
-              <td>
-                {user.user_type === "parent" &&
-                user.children &&
-                user.children.length > 0
-                  ? user.children.map((child) => child.name).join(", ")
-                  : "-"}
-              </td>
+      <div className="table-scroll-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Grade</th>
+              <th>Class</th>
+              <th>Demerits</th>
+              <th>Created</th>
+              <th>Children</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredUsers.map((user) => (
+              <tr
+                key={user.user_id}
+                onClick={() => openEditModal(user)}
+                style={{ cursor: "pointer" }}
+              >
+                <td>{user.user_id}</td>
+                <td>{`${user.first_name} ${user.last_name}`}</td>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>
+                  <div className={`role-badge-container ${user.user_type}`}>
+                    <div className={`role-badge ${user.user_type}`}>
+                      {user.user_type}
+                    </div>
+                  </div>
+                </td>
+                <td>{renderGradeLevel(user)}</td>
+                <td>{renderClassSection(user)}</td>
+                <td className={getDemeritClass(user.total_demerits)}>
+                  {user.total_demerits}
+                </td>
+                <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                <td>
+                  {user.user_type === "parent" &&
+                  user.children &&
+                  user.children.length > 0
+                    ? user.children.map((child) => child.name).join(", ")
+                    : "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {users.length === 0 && !loading && !error && (
         <div className="no-data">No users found</div>

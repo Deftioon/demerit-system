@@ -502,10 +502,16 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::student::get_my_demerits)
             .service(handlers::student::get_my_student_info)
             .service(handlers::parent::get_parent_children_summary)
+            .service(handlers::upload::upload_csv)
+            .service(handlers::demerit::get_demerit_distribution)
+            .service(handlers::demerit::get_demerit_trend)
             //TODO: HANDLERS currently do not return AuthResponse as required.
             // .service(handlers::auth::login)
             // .service(handlers::auth::register)
-            .route("/add_demerit", web::post().to(add_demerit))
+            .route(
+                "/add_demerit",
+                web::post().to(handlers::teacher::add_demerit),
+            )
             .route("/students", web::get().to(get_students))
             .route("/demerit-categories", web::get().to(get_demerit_categories))
             .route("/parents", web::get().to(get_parents))

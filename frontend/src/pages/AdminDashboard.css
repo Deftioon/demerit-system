@@ -20,17 +20,17 @@
 }
 
 .children-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .children-list li {
-  padding: 2px 0;
+    padding: 2px 0;
 }
 
 .children-list li:not(:last-child) {
-  border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
 .admin-dashboard {
@@ -156,4 +156,30 @@
     text-align: center;
     padding: 20px;
     color: #888;
+}
+
+.admin-dashboard-section {
+    margin-bottom: 20px;
+}
+
+.success-notification {
+    background-color: rgba(76, 175, 80, 0.2);
+    border-left: 4px solid #4caf50;
+    padding: 10px 15px;
+    margin: 10px 20px;
+    color: #fff;
+    border-radius: 4px;
+    animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Form, FormInput, FormButton } from "./Form";
 import "./AddDemeritForm.css";
 
@@ -42,6 +42,11 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
   });
 
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
+  const [studentSearchTerm, setStudentSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,10 +82,49 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Filter students based on search term
+    if (studentSearchTerm) {
+      const filtered = students.filter((student) =>
+        student.name.toLowerCase().includes(studentSearchTerm.toLowerCase()),
+      );
+      setFilteredStudents(filtered);
+    } else {
+      setFilteredStudents(students);
+    }
+  }, [studentSearchTerm, students]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleStudentSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setStudentSearchTerm(e.target.value);
+    setIsDropdownOpen(true);
+  };
+
+  const handleStudentSelect = (student: Student) => {
+    setSelectedStudent(student);
+    setFormData((prev) => ({ ...prev, student_id: student.id.toString() }));
+    setStudentSearchTerm(student.name);
+    setIsDropdownOpen(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Ensure this is called to prevent form navigation
+    e.preventDefault();
     try {
-      // Convert string values to numbers before sending
       const submitData = {
         student_id: parseInt(formData.student_id, 10),
         category_id: parseInt(formData.category_id, 10),
@@ -88,13 +132,8 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
         description: formData.description,
       };
 
-      // Show loading state if needed
       setLoading(true);
-
-      // Call onSubmit with the processed data
       onSubmit(submitData);
-
-      // Close the form - don't navigate away
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add demerit");
@@ -111,6 +150,27 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
     }));
   };
 
+  const highlightMatch = (text: string, query: string) => {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${query})`, "gi");
+    const parts = text.split(regex);
+
+    return (
+      <>
+        {parts.map((part, i) =>
+          regex.test(part) ? (
+            <span key={i} className="match-highlight">
+              {part}
+            </span>
+          ) : (
+            part
+          ),
+        )}
+      </>
+    );
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -123,19 +183,46 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
 
         <h2>Add New Demerit</h2>
         <Form onSubmit={handleSubmit} className="add-demerit-form">
-          <select
-            name="student_id"
-            value={formData.student_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Student</option>
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.name}
-              </option>
-            ))}
-          </select>
+          <div className="form-group">
+            <label htmlFor="student-search">Student</label>
+            <div
+              className={`searchable-dropdown ${isDropdownOpen ? "active" : ""}`}
+              ref={dropdownRef}
+            >
+              <input
+                type="text"
+                id="student-search"
+                className="search-input"
+                placeholder="Search for a student..."
+                value={studentSearchTerm}
+                onChange={handleStudentSearchChange}
+                onClick={() => setIsDropdownOpen(true)}
+                autoComplete="off"
+              />
+              {isDropdownOpen && (
+                <ul className="dropdown-list">
+                  {filteredStudents.length > 0 ? (
+                    filteredStudents.map((student) => (
+                      <li
+                        key={student.id}
+                        onClick={() => handleStudentSelect(student)}
+                        className={
+                          selectedStudent?.id === student.id ? "selected" : ""
+                        }
+                      >
+                        {highlightMatch(student.name, studentSearchTerm)}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="no-results">No students found</li>
+                  )}
+                </ul>
+              )}
+            </div>
+            {!formData.student_id && (
+              <div className="form-error">Please select a student</div>
+            )}
+          </div>
 
           <select
             name="category_id"
@@ -173,7 +260,9 @@ export const AddDemeritForm: React.FC<AddDemeritFormProps> = ({
           />
 
           <div className="form-buttons">
-            <FormButton type="submit">Add Demerit</FormButton>
+            <FormButton type="submit" disabled={!formData.student_id}>
+              Add Demerit
+            </FormButton>
             <FormButton type="button" onClick={onClose}>
               Cancel
             </FormButton>

@@ -3,6 +3,13 @@ use crate::models::ErrorResponse;
 use actix_web::{get, HttpResponse, Responder};
 use rusqlite::params;
 use serde::Serialize;
+use serde_json::json;
+
+#[derive(Serialize)]
+pub struct DemeritTimePoint {
+    pub date: String,
+    pub count: i32,
+}
 
 #[derive(Serialize)]
 pub struct DemeritHistoryRecord {
@@ -20,6 +27,18 @@ pub struct CategoryOption {
     pub id: i32,
     pub name: String,
     pub default_points: i32,
+}
+
+#[derive(Serialize)]
+pub struct DemeritCategoryCount {
+    pub category_name: String,
+    pub count: i32,
+}
+
+#[derive(Serialize)]
+pub struct GradeDemeritCount {
+    pub grade: i32,
+    pub count: i32,
 }
 
 pub async fn get_demerit_categories() -> impl Responder {
@@ -155,4 +174,140 @@ pub async fn get_demerit_history() -> impl Responder {
             })
         }
     }
+}
+
+#[get("/demerit_distribution")]
+pub async fn get_demerit_distribution() -> impl Responder {
+    let conn = match db::get_db_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Database connection error: {}", e),
+            })
+        }
+    };
+
+    // Get distribution by category
+    let mut category_stmt = match conn.prepare(
+        "SELECT c.category_name, COUNT(*) as count
+         FROM demerit_records dr
+         JOIN demerit_categories c ON dr.category_id = c.category_id
+         GROUP BY c.category_name
+         ORDER BY count DESC",
+    ) {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Query preparation error: {}", e),
+            })
+        }
+    };
+
+    let categories: Result<Vec<DemeritCategoryCount>, _> = category_stmt
+        .query_map([], |row| {
+            Ok(DemeritCategoryCount {
+                category_name: row.get(0)?,
+                count: row.get(1)?,
+            })
+        })
+        .and_then(|mapped| mapped.collect());
+
+    let categories = match categories {
+        Ok(categories) => categories,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Failed to fetch category distribution: {}", e),
+            })
+        }
+    };
+
+    // Get distribution by grade level
+    let mut grade_stmt = match conn.prepare(
+        "SELECT s.grade_level, COUNT(*) as count
+         FROM demerit_records dr
+         JOIN students s ON dr.student_id = s.student_id
+         GROUP BY s.grade_level
+         ORDER BY s.grade_level",
+    ) {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Query preparation error: {}", e),
+            })
+        }
+    };
+
+    let grades: Result<Vec<GradeDemeritCount>, _> = grade_stmt
+        .query_map([], |row| {
+            Ok(GradeDemeritCount {
+                grade: row.get(0)?,
+                count: row.get(1)?,
+            })
+        })
+        .and_then(|mapped| mapped.collect());
+
+    let grades = match grades {
+        Ok(grades) => grades,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Failed to fetch grade distribution: {}", e),
+            })
+        }
+    };
+
+    // Return both sets of data
+    HttpResponse::Ok().json(json!({
+        "categories": categories,
+        "grades": grades,
+    }))
+}
+
+#[get("/demerit_trend")]
+pub async fn get_demerit_trend() -> impl Responder {
+    let conn = match db::get_db_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Database connection error: {}", e),
+            })
+        }
+    };
+
+    // Get demerit counts grouped by date
+    let mut stmt = match conn.prepare(
+        "SELECT
+            strftime('%Y-%m-%d', date_issued) as date,
+            COUNT(*) as count
+         FROM demerit_records
+         GROUP BY date
+         ORDER BY date ASC
+         LIMIT 60", // Last 60 days with data
+    ) {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Query preparation error: {}", e),
+            })
+        }
+    };
+
+    let trend_data: Result<Vec<DemeritTimePoint>, _> = stmt
+        .query_map([], |row| {
+            Ok(DemeritTimePoint {
+                date: row.get(0)?,
+                count: row.get(1)?,
+            })
+        })
+        .and_then(|mapped| mapped.collect());
+
+    let trend_data = match trend_data {
+        Ok(data) => data,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Failed to fetch trend data: {}", e),
+            })
+        }
+    };
+
+    HttpResponse::Ok().json(trend_data)
 }

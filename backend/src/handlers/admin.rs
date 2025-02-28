@@ -57,7 +57,7 @@ pub async fn get_admin_data() -> impl Responder {
             u.created_at,
             s.grade_level,
             s.class_section,
-            (SELECT COUNT(*) FROM demerit_records dr
+            (SELECT COALESCE(SUM(dr.points), 0) FROM demerit_records dr
              JOIN students s2 ON dr.student_id = s2.student_id
              WHERE s2.user_id = u.user_id) as total_demerits
         FROM users u

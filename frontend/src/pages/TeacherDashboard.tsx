@@ -3,6 +3,7 @@ import { useUser } from "../contexts/UserContext";
 import DataTable from "../components/DataTable";
 import { AddDemeritForm, NewDemeritRecord } from "../components/AddDemeritForm";
 import { DemeritHistory } from "../components/DemeritHistory";
+import { DataVisualizationPanel } from "../components/DataVisualizationPanel";
 import "./TeacherDashboard.css";
 import { StudentDemeritSummary } from "../components/StudentDemeritSummary";
 
@@ -10,6 +11,7 @@ export const TeacherDashboard = () => {
   const { user } = useUser();
   const [showAddDemerit, setShowAddDemerit] = useState(false);
   const [showDemeritHistory, setShowDemeritHistory] = useState(false);
+  const [showVisualization, setShowVisualization] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,13 +27,18 @@ export const TeacherDashboard = () => {
       console.log("Submitting demerit record:", demerit);
 
       // Make sure demerit contains number values, not strings
+      const demeritWithTeacher = {
+        ...demerit,
+        teacher_email: user?.email, // From the user context
+      };
+
       const response = await fetch("http://localhost:8080/add_demerit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify(demerit),
+        credentials: "include", // Keep this if you're including any cookies
+        body: JSON.stringify(demeritWithTeacher),
       });
 
       if (!response.ok) {
@@ -73,6 +80,12 @@ export const TeacherDashboard = () => {
         >
           View Demerit History
         </button>
+        <button
+          className="visualization-button"
+          onClick={() => setShowVisualization(true)}
+        >
+          Data Visualization
+        </button>
       </div>
 
       <StudentDemeritSummary refreshTrigger={refreshTrigger} />
@@ -86,6 +99,10 @@ export const TeacherDashboard = () => {
 
       {showDemeritHistory && (
         <DemeritHistory onClose={() => setShowDemeritHistory(false)} />
+      )}
+
+      {showVisualization && (
+        <DataVisualizationPanel onClose={() => setShowVisualization(false)} />
       )}
     </div>
   );
