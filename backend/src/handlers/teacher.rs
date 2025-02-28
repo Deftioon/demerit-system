@@ -1,9 +1,96 @@
 use actix_web::{get, web, HttpResponse, Responder};
 use rusqlite::params;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::database::db;
 use crate::models::{ErrorResponse, NewDemeritRecord, TeacherRecord};
+
+#[derive(Serialize, Deserialize)]
+pub struct StudentDemeritSummary {
+    pub student_id: i32,
+    pub student_name: String,
+    pub total_points: i32,
+    pub recent_demerit: Option<String>,
+    pub grade_level: Option<i32>,
+    pub class_section: Option<String>,
+}
+
+#[get("/student_demerit_summary")]
+pub async fn get_student_demerit_summary() -> impl Responder {
+    let conn = match db::get_db_connection() {
+        Ok(conn) => conn,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Database connection error: {}", e),
+            })
+        }
+    };
+
+    // Query to get summarized demerit points by student
+    let query = r#"
+        SELECT
+            s.student_id,
+            u.first_name || ' ' || u.last_name AS student_name,
+            SUM(dr.points) AS total_points,
+            (SELECT category_name FROM demerit_categories c
+             JOIN demerit_records dr2 ON c.category_id = dr2.category_id
+             WHERE dr2.student_id = s.student_id
+             ORDER BY dr2.date_issued DESC
+             LIMIT 1) AS recent_demerit,
+            s.grade_level,
+            s.class_section
+        FROM
+            students s
+        JOIN
+            users u ON s.user_id = u.user_id
+        LEFT JOIN
+            demerit_records dr ON s.student_id = dr.student_id
+        GROUP BY
+            s.student_id, u.first_name, u.last_name, s.grade_level, s.class_section
+        ORDER BY
+            total_points DESC
+    "#;
+
+    let mut stmt = match conn.prepare(query) {
+        Ok(stmt) => stmt,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Query preparation error: {}", e),
+            })
+        }
+    };
+
+    let summaries = match stmt.query_map([], |row| {
+        Ok(StudentDemeritSummary {
+            student_id: row.get(0)?,
+            student_name: row.get(1)?,
+            total_points: row.get::<_, Option<i32>>(2)?.unwrap_or(0),
+            recent_demerit: row.get(3)?,
+            grade_level: row.get(4)?,
+            class_section: row.get(5)?,
+        })
+    }) {
+        Ok(mapped) => {
+            let collected: Result<Vec<StudentDemeritSummary>, _> = mapped.collect();
+            match collected {
+                Ok(summaries) => summaries,
+                Err(e) => {
+                    return HttpResponse::InternalServerError().json(ErrorResponse {
+                        message: format!("Error collecting summaries: {}", e),
+                    })
+                }
+            }
+        }
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(ErrorResponse {
+                message: format!("Query execution error: {}", e),
+            })
+        }
+    };
+
+    HttpResponse::Ok().json(summaries)
+}
 
 #[get("/teacher_data")]
 pub async fn get_teacher_data() -> impl Responder {

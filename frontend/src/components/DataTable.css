@@ -20,7 +20,6 @@
 .search-container {
     flex-grow: 1;
     max-width: 300px;
-    margin-top: 200px;
     margin-right: auto;
 }
 
@@ -358,4 +357,66 @@ select.role-select {
     .refresh-button {
         align-self: flex-start; /* Align to the left on mobile */
     }
+}
+
+.high-demerits {
+    color: #ff4444;
+    font-weight: bold;
+    background-color: rgba(255, 80, 0, 0.4);
+}
+
+.very-high-demerits {
+    color: #ff0000;
+    font-weight: bold;
+    background-color: rgba(255, 0, 0, 0.4); /* Slight background highlight */
+}
+
+.medium-demerits {
+    color: #ff9800;
+    font-weight: bold;
+    background-color: rgba(255, 165, 0, 0.4)
+}
+
+.good-demerits {
+    color: #ff9800;
+    font-weight: bold;
+    background-color: rgba(0, 255, 0, 0.15)
+}
+
+.student-summary-card {
+  background-color: #444;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.summary-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 8px;
+}
+
+.summary-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.summary-item span:first-child {
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.summary-item span:last-child {
+  font-size: 1.1rem;
+  font-weight: 500;
 }

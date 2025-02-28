@@ -1,14 +1,15 @@
 import { useUser } from "../contexts/UserContext";
 import "./ParentDashboard.css";
-import DataTable from "../components/DataTable";
+import { ParentChildSummary } from "../components/ParentChildSummary";
 
 export const ParentDashboard = () => {
   const { user } = useUser();
+
   return (
     <div>
       <h1>Parent Dashboard</h1>
-      <p>Welcome, {user?.email}!</p>
-      <DataTable title="Child's Demerits" />
+      <p className="Welcome">Welcome, {user?.firstName || user?.email}!</p>
+      <ParentChildSummary />
     </div>
   );
 };

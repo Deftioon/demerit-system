@@ -4,6 +4,7 @@ import DataTable from "../components/DataTable";
 import { AddDemeritForm, NewDemeritRecord } from "../components/AddDemeritForm";
 import { DemeritHistory } from "../components/DemeritHistory";
 import "./TeacherDashboard.css";
+import { StudentDemeritSummary } from "../components/StudentDemeritSummary";
 
 export const TeacherDashboard = () => {
   const { user } = useUser();
@@ -74,7 +75,7 @@ export const TeacherDashboard = () => {
         </button>
       </div>
 
-      <DataTable title="Demerits" refreshTrigger={refreshTrigger} />
+      <StudentDemeritSummary refreshTrigger={refreshTrigger} />
 
       {showAddDemerit && (
         <AddDemeritForm

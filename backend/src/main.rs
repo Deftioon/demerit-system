@@ -8,6 +8,7 @@ use std::sync::Mutex;
 
 mod database;
 mod handlers;
+mod middleware;
 mod models;
 mod services;
 
@@ -494,8 +495,16 @@ async fn main() -> std::io::Result<()> {
             .service(update_user_role)
             .service(handlers::demerit::get_demerit_history)
             .service(handlers::teacher::get_teacher_data)
+            .service(handlers::teacher::get_student_demerit_summary)
+            .service(handlers::student::get_student_demerits)
             .route("/login", web::post().to(login))
             .route("/register", web::post().to(register))
+            .service(handlers::student::get_my_demerits)
+            .service(handlers::student::get_my_student_info)
+            .service(handlers::parent::get_parent_children_summary)
+            //TODO: HANDLERS currently do not return AuthResponse as required.
+            // .service(handlers::auth::login)
+            // .service(handlers::auth::register)
             .route("/add_demerit", web::post().to(add_demerit))
             .route("/students", web::get().to(get_students))
             .route("/demerit-categories", web::get().to(get_demerit_categories))
